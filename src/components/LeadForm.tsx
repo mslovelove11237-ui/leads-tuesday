@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { createLead } from "@/app/actions";
 
 export default function LeadForm() {
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [isPending, startTransition] = useTransition();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -11,7 +13,10 @@ export default function LeadForm() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // TODO: 서버 액션 연결
+    startTransition(async () => {
+      await createLead(form);
+      setForm({ name: "", email: "", phone: "" });
+    });
   }
 
   return (
@@ -66,9 +71,10 @@ export default function LeadForm() {
 
       <button
         type="submit"
-        className="mt-2 w-full rounded-lg bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-gray-700 active:scale-[0.98]"
+        disabled={isPending}
+        className="mt-2 w-full rounded-lg bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-gray-700 active:scale-[0.98] disabled:opacity-50"
       >
-        신청하기
+        {isPending ? "저장 중..." : "신청하기"}
       </button>
     </form>
   );
