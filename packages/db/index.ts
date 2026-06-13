@@ -7,5 +7,5 @@ const client = postgres(connectionString, { prepare: false });
 
 export const db = drizzle(client, { schema });
 
-export { leads } from "./schema";
-export type { Lead, NewLead } from "./schema";
+export { leads, memos } from "./schema";
+export type { Lead, NewLead, Memo, NewMemo } from "./schema";

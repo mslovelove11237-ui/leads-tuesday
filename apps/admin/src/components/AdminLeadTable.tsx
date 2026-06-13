@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateLead, deleteLead } from '@/app/actions'
 import type { Lead } from '@leads/db'
+import MemoModal from './MemoModal'
 
 type FormErrors = { name?: string; email?: string; phone?: string }
 
@@ -20,6 +21,7 @@ export default function AdminLeadTable({ initialLeads }: { initialLeads: Lead[] 
   const [isPending, startTransition] = useTransition()
   const [editState, setEditState] = useState<EditState | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Lead | null>(null)
+  const [memoTarget, setMemoTarget] = useState<Lead | null>(null)
 
   function startEdit(lead: Lead) {
     setEditState({ id: lead.id, name: lead.name, email: lead.email, phone: lead.phone, errors: {} })
@@ -177,6 +179,13 @@ export default function AdminLeadTable({ initialLeads }: { initialLeads: Lead[] 
                             수정
                           </button>
                           <button
+                            onClick={() => setMemoTarget(lead)}
+                            disabled={isPending || editState !== null}
+                            className="rounded-md border border-blue-200 px-3 py-1.5 text-xs font-medium text-blue-500 hover:bg-blue-50 disabled:opacity-40"
+                          >
+                            메모
+                          </button>
+                          <button
                             onClick={() => setDeleteTarget(lead)}
                             disabled={isPending || editState !== null}
                             className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-40"
@@ -193,6 +202,10 @@ export default function AdminLeadTable({ initialLeads }: { initialLeads: Lead[] 
           </tbody>
         </table>
       </div>
+
+      {memoTarget && (
+        <MemoModal lead={memoTarget} onClose={() => setMemoTarget(null)} />
+      )}
 
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
