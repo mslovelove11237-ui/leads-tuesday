@@ -17,7 +17,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  const expected = await hashPassword(process.env.ADMIN_PASSWORD ?? '')
+  if (!process.env.ADMIN_PASSWORD) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+  const expected = await hashPassword(process.env.ADMIN_PASSWORD)
   if (session !== expected) {
     const res = NextResponse.redirect(new URL('/login', request.url))
     res.cookies.delete('admin_session')

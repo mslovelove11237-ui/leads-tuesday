@@ -31,6 +31,10 @@ export async function createLead(
     return { success: false, errors }
   }
 
-  await db.insert(leads).values(data)
+  try {
+    await db.insert(leads).values(data)
+  } catch {
+    return { success: false, errors: { name: '저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.' } }
+  }
   return { success: true }
 }

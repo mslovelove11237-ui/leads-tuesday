@@ -29,7 +29,8 @@ function validate(data: LeadData): FormErrors {
 }
 
 function sessionToken(): string {
-  return createHash('sha256').update(process.env.ADMIN_PASSWORD ?? '').digest('hex')
+  if (!process.env.ADMIN_PASSWORD) throw new Error('ADMIN_PASSWORD env var is not set')
+  return createHash('sha256').update(process.env.ADMIN_PASSWORD).digest('hex')
 }
 
 export async function adminLogin(password: string): Promise<{ success: boolean }> {
@@ -63,11 +64,19 @@ export async function updateLead(
 ): Promise<{ success: true } | { success: false; errors: FormErrors }> {
   const errors = validate(data)
   if (Object.keys(errors).length > 0) return { success: false, errors }
-  const updated = await db.update(leads).set(data).where(eq(leads.id, id)).returning({ id: leads.id })
-  if (updated.length === 0) return { success: false, errors: { name: '리드가 이미 삭제되었습니다.' } }
+  try {
+    const updated = await db.update(leads).set(data).where(eq(leads.id, id)).returning({ id: leads.id })
+    if (updated.length === 0) return { success: false, errors: { name: '리드가 이미 삭제되었습니다.' } }
+  } catch {
+    return { success: false, errors: { name: '저장 중 오류가 발생했습니다.' } }
+  }
   return { success: true }
 }
 
 export async function deleteLead(id: number): Promise<void> {
-  await db.delete(leads).where(eq(leads.id, id)).returning({ id: leads.id })
+  try {
+    await db.delete(leads).where(eq(leads.id, id)).returning({ id: leads.id })
+  } catch {
+    // 이미 삭제된 경우 무시 — 화면은 refresh로 최신 상태 반영
+  }
 }
