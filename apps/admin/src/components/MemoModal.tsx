@@ -1,26 +1,33 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useTransition, useCallback } from 'react'
 import { getMemos, createMemo, deleteMemo } from '@/app/actions'
 import type { Lead, Memo } from '@leads/db'
 
 export default function MemoModal({ lead, onClose }: { lead: Lead; onClose: () => void }) {
   const [memoList, setMemoList] = useState<Memo[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [newContent, setNewContent] = useState('')
   const [formError, setFormError] = useState('')
   const [isPending, startTransition] = useTransition()
 
-  async function loadMemos() {
-    setIsLoading(true)
-    const data = await getMemos(lead.id)
-    setMemoList(data)
-    setIsLoading(false)
-  }
+  const loadMemos = useCallback(async (showSpinner = false) => {
+    if (showSpinner) setIsLoading(true)
+    setLoadError(false)
+    try {
+      const data = await getMemos(lead.id)
+      setMemoList(data)
+    } catch {
+      setLoadError(true)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [lead.id])
 
   useEffect(() => {
-    loadMemos()
-  }, [lead.id])
+    loadMemos(true)
+  }, [loadMemos])
 
   function handleAdd() {
     startTransition(async () => {
@@ -56,7 +63,10 @@ export default function MemoModal({ lead, onClose }: { lead: Lead; onClose: () =
           {isLoading && (
             <p className="py-4 text-center text-sm text-gray-400">불러오는 중…</p>
           )}
-          {!isLoading && memoList.length === 0 && (
+          {!isLoading && loadError && (
+            <p className="py-4 text-center text-sm text-red-400">메모를 불러오지 못했습니다.</p>
+          )}
+          {!isLoading && !loadError && memoList.length === 0 && (
             <p className="py-4 text-center text-sm text-gray-400">등록된 메모가 없습니다.</p>
           )}
           {memoList.map((memo) => (

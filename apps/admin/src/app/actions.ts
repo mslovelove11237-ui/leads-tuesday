@@ -81,7 +81,13 @@ export async function deleteLead(id: number): Promise<void> {
   }
 }
 
+async function requireAdmin(): Promise<void> {
+  const cookieStore = await cookies()
+  if (cookieStore.get('admin_session')?.value !== sessionToken()) redirect('/login')
+}
+
 export async function getMemos(leadId: number): Promise<Memo[]> {
+  await requireAdmin()
   return db.select().from(memos).where(eq(memos.leadId, leadId)).orderBy(desc(memos.createdAt))
 }
 
@@ -89,6 +95,7 @@ export async function createMemo(
   leadId: number,
   content: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin()
   const trimmed = content.trim()
   if (!trimmed) return { success: false, error: '메모 내용을 입력해 주세요.' }
   if (trimmed.length > 500) return { success: false, error: '메모는 500자 이내로 입력해 주세요.' }
@@ -101,6 +108,7 @@ export async function createMemo(
 }
 
 export async function deleteMemo(id: number): Promise<void> {
+  await requireAdmin()
   try {
     await db.delete(memos).where(eq(memos.id, id))
   } catch {
