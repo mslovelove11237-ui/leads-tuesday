@@ -15,6 +15,13 @@
       "when": 1780574108770,
       "tag": "0001_elite_kang",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781333602518,
+      "tag": "0002_mysterious_leech",
+      "breakpoints": true
     }
   ]
 }
