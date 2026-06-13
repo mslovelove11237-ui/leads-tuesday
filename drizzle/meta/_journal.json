@@ -8,6 +8,13 @@
       "when": 1780572080231,
       "tag": "0000_aromatic_vivisector",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780574108770,
+      "tag": "0001_elite_kang",
+      "breakpoints": true
     }
   ]
 }
